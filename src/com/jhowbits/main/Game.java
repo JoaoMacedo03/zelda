@@ -33,6 +33,8 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 	private boolean isRunning = true;
 	public  static final int WIDTH = 240, HEIGHT = 160, SCALE = 3;
 	
+	private int CUR_LEVEL = 1, MAX_LEVEL = 2;
+	
 	private BufferedImage image;
 	
 	public static List<Entity> entities;
@@ -59,7 +61,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 		spritesheet = new Spritesheet("/spritesheet.png");
 		player = new Player(0, 0, 16, 16, spritesheet.getSprite(32, 0, 16, 16));
 		entities.add(player);
-		world = new World("/map.png");		
+		world = new World("/level1.png");		
 	}
 	
 	public void initFrame() {
@@ -101,6 +103,18 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 		for(int i = 0; i < bullets.size(); i++) {
 			bullets.get(i).tick();
 		}
+		
+		if(enemies.size() == 0) {
+			//Avançar para o próximo level
+			CUR_LEVEL++;
+			
+			if(CUR_LEVEL > MAX_LEVEL) {
+				CUR_LEVEL = 1;
+			}
+			
+			String newWorld = "level" + CUR_LEVEL + ".png";
+			World.restartGame(newWorld);
+		}
 	}
 	
 	public void render() {
@@ -136,7 +150,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 		g.drawImage(image, 0, 0, WIDTH * SCALE, HEIGHT * SCALE, null);
 		g.setFont(new Font("arial", Font.BOLD, 20));
 		g.setColor(Color.WHITE);
-		g.drawString("Ammo: " + player.ammo, 600, 20);
+		g.drawString("Ammo: " + player.ammo, 580, 20);
 		bs.show();
 	}
 	

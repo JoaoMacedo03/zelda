@@ -18,6 +18,11 @@ public class Enemy extends Entity {
 	private int frames = 0, maxFrames = 20, index = 0, maxIndex = 1;
 	
 	private BufferedImage[] sprites;
+	
+	private int hp = 10;
+	
+	private boolean isDamaged = false;
+	private int damageFrames = 10, damageCurrent = 0;
 
 	public Enemy(int x, int y, int width, int height, BufferedImage sprite) {
 		super(x, y, width, height, null);
@@ -65,8 +70,6 @@ public class Enemy extends Entity {
 			if(Game.rand.nextInt(100) < 10) {
 				Game.player.hp -= Game.rand.nextInt(3);
 				Game.player.isDamaged = true;
-				
-				System.out.println("Player Hp: " + Game.player.hp);
 			}
 			
 		}
@@ -78,7 +81,44 @@ public class Enemy extends Entity {
 			index++;
 			
 			if(index > maxIndex) index = 0;
-		}				
+		}
+		
+		this.collidingBullet();
+		
+		if(hp <= 0) {
+			this.destroySelf();
+			return;
+		}
+		
+		if(isDamaged) {
+			this.damageCurrent++;
+			if(this.damageCurrent == this.damageFrames) {
+				this.damageCurrent = 0;
+				this.isDamaged = false;
+			}
+		}
+	}
+	
+	public void destroySelf() {
+		Game.enemies.remove(this);
+		Game.entities.remove(this);
+	}
+	
+	public void collidingBullet() {
+		for(int i = 0; i < Game.bullets.size(); i++) {
+			Entity e = Game.bullets.get(i);
+			
+			if(e instanceof BulletShoot) {
+				
+				if(Entity.isColiding(this, e)) {
+					Game.bullets.remove(i);
+					hp--;
+					isDamaged = true;
+					return;
+				}
+				
+			}
+		}
 	}
 	
 	public boolean isColiding(int xNext, int yNext) {
@@ -105,7 +145,12 @@ public class Enemy extends Entity {
 	}
 	
 	public void render(Graphics g) {
-		g.drawImage(sprites[index], this.getX() - Camera.x, this.getY() - Camera.y, null);
+		if(!isDamaged) {
+			g.drawImage(sprites[index], this.getX() - Camera.x, this.getY() - Camera.y, null);
+		} else {
+			g.drawImage(Entity.ENEMY_FEEDBACK, this.getX() - Camera.x, this.getY() - Camera.y, null);
+		}
+		
 //		g.setColor(Color.BLUE);
 //		g.fillRect(this.getX() + maskX - Camera.x, this.getY() + maskY - Camera.y, maskW, maskH);
 	}
